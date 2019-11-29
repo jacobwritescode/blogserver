@@ -22,7 +22,8 @@ exports.userLogin = (req, res) => {
                     res.json({
                         success: true,
                         message: 'Authentication successful!',
-                        token: token
+                        // token: token,
+                        user:{"name":user.name,"email":user.email,"token":token}
                     });
                 } else {
                     res.json({
