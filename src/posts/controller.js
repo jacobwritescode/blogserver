@@ -1,55 +1,55 @@
 const { BlogPostModel } = require("./model")
 
-exports.createPost = (req,res)=>{
+exports.createPost = (req, res) => {
     console.log("received post")
     // if(!req.body.head){
     //     return res.status(400).send({
     //         messgae:"Post text cannot be empty "
     //     })
     // }
-    if( req.body.title && req.body.body && req.body.authorname ){
-    const post = new BlogPostModel({
-        title:req.body.title,
-        author:req.body.authorname,
-        body:req.body.body,
-        comments: [],
-        date: new Date(),
-        hidden: false,
-        meta: {
-            votes: 0,
-            favs:  0,
-        }
-    })
-   
-    post.save()
-    .then(data=>{
-        res.send(data)
-    }).catch(err =>{
-        res.status(500).send({
-            message:err.message || "Something went wrong"
+    if (req.body.title && req.body.body && req.body.authorname) {
+        const post = new BlogPostModel({
+            title: req.body.title,
+            author: req.body.authorname,
+            body: req.body.body,
+            comments: [],
+            date: new Date(),
+            hidden: false,
+            meta: {
+                votes: 0,
+                favs: 0,
+            }
         })
-    })
 
-    } else{
+        post.save()
+            .then(data => {
+                res.send(data)
+            }).catch(err => {
+                res.status(500).send({
+                    message: err.message || "Something went wrong"
+                })
+            })
+
+    } else {
         return res.status(400).send({
-            messgae:"Required fields are missing"
+            messgae: "Required fields are missing"
         })
     }
 }
 
-exports.allPost = (req,res)=>{
+exports.allPost = (req, res) => {
     console.log("allposts===>")
-    BlogPostModel.find()
-    .then(posts=>{
-        res.send(posts)
-    }).catch(err => {
-        res.status(500).send({
-            message:err.message || "Something went wrong!"
+    BlogPostModel.find().sort({ date: -1 })
+        .then(posts => {
+            res.send(posts)
+        }).catch(err => {
+            res.status(500).send({
+                message: err.message || "Something went wrong!"
+            })
         })
-    })
 }
 
-exports.updatePost = (req, res) => {
+exports.commentPost = (req, res) => {
     console.log("update post-->", req.params)
     console.log("update body-->", req.body)
     if (req.body) {
@@ -67,40 +67,104 @@ exports.updatePost = (req, res) => {
                 res.send(post)
             }).catch(err => {
                 print(err.kind)
-                if(err.kind === 'ObjectId' || err.name === 'NotFound') {
+                if (err.kind === 'ObjectId' || err.name === 'NotFound') {
                     return res.status(404).send({
                         message: "Post not found"
-                    });                
+                    });
                 }
                 return res.status(500).send({
                     message: "Error updating"
                 });
             })
-    }else{
+    } else {
         return res.status(400).send({
-            messgae:"body missing"
-        })  
+            messgae: "body missing"
+        })
     }
 }
+exports.editPost = (req, res) => {
+    console.log("update post-->", req.params)
+    console.log("update body-->", req.body)
+    if (req.body) {
+        BlogPostModel.findByIdAndUpdate(req.params.postId,
+            { $set:{ title: req.body.title, body: req.body.body }},
+            { safe: true, upsert: true, new: true,useFindAndModify:false}
+        )
+            .then(post => {
+                if (!post) {
+                    return res.status(404).send({
+                        message: "Post Not Found"
+                    })
+                }
+                console.log("found-->", post)
+                res.send(post)
+            }).catch(err => {
+                print(err.kind)
+                if (err.kind === 'ObjectId' || err.name === 'NotFound') {
+                    return res.status(404).send({
+                        message: "Post not found"
+                    });
+                }
+                return res.status(500).send({
+                    message: "Error updating"
+                });
+            })
+    } else {
+        return res.status(400).send({
+            messgae: "body missing"
+        })
+    }
+}
+exports.getPost = (req, res) => {
+    console.log("getPost params-->", req.params)
+    console.log("getPost body-->", req.body)
+    if (req.params) {
+        BlogPostModel.findById(req.params.postId)
+            .then(post => {
+                if (!post) {
+                    return res.status(404).send({
+                        message: "Post Not Found"
+                    })
+                }
+                console.log("found-->", post)
+                res.send(post)
+            }).catch(err => {
+                print(err.kind)
+                if (err.kind === 'ObjectId' || err.name === 'NotFound') {
+                    return res.status(404).send({
+                        message: "Post not found"
+                    });
+                }
+                return res.status(500).send({
+                    message: "Error updating"
+                });
+            })
+    } else {
+        return res.status(400).send({
+            messgae: "Params missing"
+        })
+    }
 
-exports.deletePost=(req,res)=>{
+}
+
+exports.deletePost = (req, res) => {
     console.log("delete posts==>")
     BlogPostModel.findByIdAndRemove(req.params.postId)
-    .then(post=>{
-        if(!post){
-            return res.status(404).send({
-                message:"Couldn't find the post"
-            })
-        }
-        res.send({message:"Post deleted successfully!"})
-    }).catch(err=>{
-        if(err.kind === 'ObjectId' || err.name === 'NotFound') {
-            return res.status(404).send({
-                message: "Post not found"
-            });                
-        }
-        return res.status(500).send({
-            message: "Could not delete post"
-        });
-    })
+        .then(post => {
+            if (!post) {
+                return res.status(404).send({
+                    message: "Couldn't find the post"
+                })
+            }
+            res.send({ message: "Post deleted successfully!" })
+        }).catch(err => {
+            if (err.kind === 'ObjectId' || err.name === 'NotFound') {
+                return res.status(404).send({
+                    message: "Post not found"
+                });
+            }
+            return res.status(500).send({
+                message: "Could not delete post"
+            });
+        })
 }

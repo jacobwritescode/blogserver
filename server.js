@@ -6,13 +6,13 @@ const router = require('./router')
 
 const app = global.express()
 // app.use(global.bodyParser.urlencoded({ extended: false }));
-// app.use(global.bodyParser.json())
-app.use(global.bodyParser({ keepExtensions: true }))
+app.use(global.bodyParser.json())
+// app.use(global.bodyParser({ keepExtensions: true }))
 var allowCrossDomain = function (req, res, next) {
     res.header('Access-Control-Allow-Credentials', true)
     res.header('Access-Control-Allow-Origin', '*')
     res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
-    res.header('Access-Control-Allow-Headers', 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept,accesstoken')
+    res.header('Access-Control-Allow-Headers', 'X-Requested-With, X-HTTP-Method-Override, Content-Type,authorization,Accept,accesstoken')
     next()
 }
 app.use(allowCrossDomain)

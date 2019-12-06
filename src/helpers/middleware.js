@@ -1,5 +1,5 @@
-const global = require('../helper/global')
-const config = require('../helper/config');
+const global = require('../helpers/global')
+const config = require('../helpers/config');
 
 
 exports.checkToken = (req, res, next) => {
@@ -11,11 +11,11 @@ exports.checkToken = (req, res, next) => {
     });
   }
   let token = req.headers['x-access-token'] || req.headers['authorization']; // Express headers are auto converted to lowercase
-  if (token.startsWith('Bearer ')) {
-    // Remove Bearer from string
-    token = token.slice(7, token.length);
-  }
-
+  // if (token.startsWith('Bearer ')) {
+  //   // Remove Bearer from string
+  //   token = token.slice(7, token.length);
+  // }
+  // console.log("received token-->",token)
   if (token) {
     global.jwt.verify(token, config.secret, (err, decoded) => {
       if (err) {

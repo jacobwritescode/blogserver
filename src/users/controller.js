@@ -5,12 +5,11 @@ const config = require('../helpers/config')
 
 
 exports.userLogin = (req, res) => {
-    console.log("request--->", req.body)
     UserModel.findOne({ email: req.body.email }).then((user) => {
         if (user) {
             console.log("user found->",user)
             user.comparePassword(req.body.password, (err, status) => {
-                if (status) {
+                if (status) {  
                     console.log("status is ---->",status)
                     let token = global.jwt.sign({ email: user.email },
                         config.secret,
